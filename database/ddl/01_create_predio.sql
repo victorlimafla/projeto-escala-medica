@@ -1,0 +1,6 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE predio (
+    id_predio INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL UNIQUE
+);
