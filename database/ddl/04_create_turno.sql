@@ -1,7 +1,7 @@
 CREATE TABLE turno (
     id_turno INTEGER PRIMARY KEY AUTOINCREMENT,
-    descricao TEXT NOT NULL UNIQUE, -- Ex: 'Manhã', 'Tarde', 'Noite'
-    hora_inicio TEXT NOT NULL,       -- Formato HH:MM, ex: '07:00'
-    hora_fim TEXT NOT NULL,          -- Formato HH:MM, ex: '13:00'
-    horas_duracao INTEGER NOT NULL   -- Ex: 6, 12
+    descricao TEXT NOT NULL UNIQUE,
+    hora_inicio TEXT NOT NULL CHECK (hora_inicio GLOB '[0-2][0-9]:[0-5][0-9]'),
+    hora_fim TEXT NOT NULL CHECK (hora_fim GLOB '[0-2][0-9]:[0-5][0-9]'),
+    horas_duracao INTEGER NOT NULL CHECK (horas_duracao > 0)
 );
