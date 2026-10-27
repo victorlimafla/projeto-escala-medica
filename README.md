@@ -3,7 +3,6 @@
 Sistema de escala médica hospitalar: modelagem de banco de dados em SQLite (Parte 1) e API REST com Spring Boot e JPA (Parte 2).
 
 > **Disciplina:** Banco de Dados — Prof. Stelvio Barboza
-
 > **Escopo deste repositório no momento:** Parte 1 — modelagem, estrutura do repositório e scripts SQL.
 
 ---
@@ -43,10 +42,7 @@ projeto-escala-medica/
 │   └── queries/
 └── docs/
     └── diagramas/
-        ├── 02_modelo_logico.png
-        ├── diagrama_escala_medica.png
-        ├── modelo_escala_medica.dbml
-        └── codigo_diagrama_escala_medica.sql
+        └── 02_modelo_logico.png
 ```
 
 | Pasta | Conteúdo |
@@ -55,21 +51,15 @@ projeto-escala-medica/
 | `database/ddl` | Comandos `CREATE TABLE`, um arquivo por tabela, numerados na ordem de execução. |
 | `database/dml` | `INSERT`s de prédios, departamentos, turnos, relação departamento × especialidade e escala semanal. |
 | `database/queries` | As seis consultas obrigatórias, uma por arquivo, com o resultado esperado em comentário. |
-| `docs/diagramas` | DER conceitual, modelo lógico e arquivos-fonte dos diagramas. |
+| `docs/diagramas` | Diagrama do modelo lógico. |
 
 **Convenções adotadas:** tabelas em `snake_case` e no singular; chave primária no formato `id_<tabela>`; chave estrangeira com o mesmo nome da chave primária referenciada; scripts numerados na ordem de execução; um script por tabela no DDL.
 
 ## 3. Modelo de dados
 
-### 3.1 Diagramas
-
-**Modelo lógico**
+### 3.1 Modelo lógico
 
 ![Modelo lógico](docs/diagramas/02_modelo_logico.png)
-
-**DER conceitual**
-
-...
 
 ### 3.2 Tabelas
 
@@ -134,6 +124,8 @@ O SQLite mantém as chaves estrangeiras **desligadas por padrão**. É necessár
 
 ### Passo a passo (terminal)
 
+> Os comandos abaixo usam sintaxe Bash. No Windows, execute-os no **Git Bash** (não no `cmd`).
+
 1. Clone o repositório e entre na pasta:
 
    ```bash
@@ -165,7 +157,7 @@ O SQLite mantém as chaves estrangeiras **desligadas por padrão**. É necessár
 ### Passo a passo (DB Browser ou DBeaver)
 
 1. Abra uma **cópia** de `hospital.sqlite`.
-2. Garanta que `PRAGMA foreign_keys = ON;` esteja ativo na conexão.
+2. Confirme que as chaves estrangeiras estão ativas. No DB Browser, a opção fica em *Edit → Preferences → Database → Foreign keys*. Se o cliente avisar sobre alterar o `PRAGMA` dentro de uma transação, execute `PRAGMA foreign_keys = ON;` sozinho, antes dos scripts.
 3. Abra e execute cada script de `database/ddl`, na ordem numérica.
 4. Faça o mesmo com os scripts de `database/dml`.
 5. Execute as consultas de `database/queries`.
@@ -195,7 +187,6 @@ Cada consulta está em um arquivo próprio em `database/queries`, com o resultad
 - **Turno da noite.** O turno das 19h às 07h cruza a meia-noite. Ele é registrado com `hora_inicio = '19:00'`, `hora_fim = '07:00'` e `horas_duracao = 12`, e a alocação refere-se ao dia em que o turno **começa**.
 - **Tabelas existentes preservadas.** `medico`, `especialidade` e `regime_trabalho` não foram modificadas, e as novas tabelas se relacionam com elas por FK.
 - **Regras verificadas por consulta.** RN02 e RN03 envolvem comparações entre tabelas que não cabem em uma constraint simples do SQLite. Por isso são validadas pelas consultas Q4 e Q5 e serão reforçadas na camada de serviço na Parte 2.
-- **Rascunhos do modelo.** `diagrama_escala_medica.png`, `modelo_escala_medica.dbml` e `codigo_diagrama_escala_medica.sql` são a primeira versão do modelo, mantida em `docs/diagramas` apenas como histórico. O modelo vigente é o `02_modelo_logico.png`, implementado nos scripts de `database/ddl`.
 
 ## 8. Equipe e próximos passos
 
