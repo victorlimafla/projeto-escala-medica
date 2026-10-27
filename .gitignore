@@ -15,3 +15,10 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+
+# Cópia de trabalho do banco de dados (não versionar)
+# O banco fornecido, database/base/hospital.sqlite, continua versionado
+escala_medica.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
