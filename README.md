@@ -3,6 +3,7 @@
 Sistema de escala médica hospitalar: modelagem de banco de dados em SQLite (Parte 1) e API REST com Spring Boot e JPA (Parte 2).
 
 > **Disciplina:** Banco de Dados — Prof. Stelvio Barboza
+> 
 > **Escopo deste repositório no momento:** Parte 1 — modelagem, estrutura do repositório e scripts SQL.
 
 ---
@@ -20,7 +21,7 @@ Exemplo do tipo de resposta que o banco deve fornecer:
 ```
 Ana Ribeiro (Ortopedia)
 Segunda-feira, turno da manhã
-Bloco B, Ambulatório de Ortopedia
+Bloco A - Principal, UTI Adulto
 ```
 
 ## 2. Estrutura do repositório
@@ -39,18 +40,30 @@ projeto-escala-medica/
 │   │   ├── 04_create_turno.sql
 │   │   └── 05_create_alocacao.sql
 │   ├── dml/
+│   │   ├── 01_insert_predio.sql
+│   │   ├── 02_insert_departamento.sql
+│   │   ├── 03_insert_turno.sql
+│   │   ├── 04_insert_departamento_especialidade.sql
+│   │   └── 05_insert_alocacao.sql
 │   └── queries/
+│       ├── 01_select_q1.sql
+│       ├── 02_select_q2.sql
+│       ├── 03_select_q3.sql
+│       ├── 04_select_q4.sql
+│       ├── 05_select_q5.sql
+│       └── 06_select_q6.sql
 └── docs/
     └── diagramas/
         └── 02_modelo_logico.png
 ```
 
+
 | Pasta | Conteúdo |
 |---|---|
 | `database/base` | Banco fornecido (`hospital.sqlite`). Os scripts rodam sobre uma **cópia** dele, nunca sobre o original. |
 | `database/ddl` | Comandos `CREATE TABLE`, um arquivo por tabela, numerados na ordem de execução. |
-| `database/dml` | `INSERT`s de prédios, departamentos, turnos, relação departamento × especialidade e escala semanal. |
-| `database/queries` | As seis consultas obrigatórias, uma por arquivo, com o resultado esperado em comentário. |
+| `database/dml` | `INSERT`s de prédios, departamentos, turnos, compatibilidades (departamento × especialidade) e alocações. |
+| `database/queries` | As seis consultas obrigatórias, uma por arquivo, com o resultado esperado em cabeçalho comentado. |
 | `docs/diagramas` | Diagrama do modelo lógico. |
 
 **Convenções adotadas:** tabelas em `snake_case` e no singular; chave primária no formato `id_<tabela>`; chave estrangeira com o mesmo nome da chave primária referenciada; scripts numerados na ordem de execução; um script por tabela no DDL.
@@ -77,7 +90,7 @@ Foram modeladas cinco novas tabelas, ligadas às anteriores:
 |---|---|
 | `predio` | Bloco, prédio ou unidade física do hospital. |
 | `departamento` | Setor dentro de um prédio, como UTI ou Ambulatório. Um prédio tem vários departamentos. |
-| `departamento_especialidade` | Quais especialidades podem atuar em cada departamento. Tabela associativa de um relacionamento N:N. |
+| `departamento_especialidade` | Permissões de especialidades por departamento. Tabela associativa de um relacionamento N:N. |
 | `turno` | Faixas de horário: manhã (07h às 13h), tarde (13h às 19h) e noite (19h às 07h). |
 | `alocacao` | O coração da escala: relaciona médico, departamento, dia da semana e turno. |
 
@@ -142,7 +155,7 @@ O SQLite mantém as chaves estrangeiras **desligadas por padrão**. É necessár
 3. Execute os scripts de DDL e depois os de DML, na ordem numérica, ligando as FKs a cada conexão:
 
    ```bash
-   for f in database/ddl/0*.sql database/dml/*.sql; do
+   for f in database/ddl/0*.sql database/dml/0*.sql; do
      echo "Executando $f"
      (echo "PRAGMA foreign_keys = ON;"; cat "$f") | sqlite3 escala_medica.sqlite
    done
@@ -151,7 +164,7 @@ O SQLite mantém as chaves estrangeiras **desligadas por padrão**. É necessár
 4. Execute qualquer consulta de validação:
 
    ```bash
-   (echo "PRAGMA foreign_keys = ON;"; cat database/queries/q1_escala_medico.sql) | sqlite3 -header -column escala_medica.sqlite
+   (echo "PRAGMA foreign_keys = ON;"; cat database/queries/01_select_q1.sql) | sqlite3 -header -column escala_medica.sqlite
    ```
 
 ### Passo a passo (DB Browser ou DBeaver)
@@ -168,14 +181,14 @@ O SQLite mantém as chaves estrangeiras **desligadas por padrão**. É necessár
 
 Cada consulta está em um arquivo próprio em `database/queries`, com o resultado esperado documentado no comentário do arquivo.
 
-| Código | O que retorna | Foco |
+| Arquivo | Descrição | Foco e Resultado |
 |---|---|---|
-| Q1 | Escala semanal completa de um médico: dia, turno, prédio e departamento | Pergunta central |
-| Q2 | Médicos presentes em um prédio na quarta-feira à tarde | Pergunta central |
-| Q3 | Médicos sem nenhuma alocação na semana | `LEFT JOIN` |
-| Q4 | Alocações em departamento incompatível com a especialidade (**deve retornar vazio**) | Valida RN02 |
-| Q5 | Horas alocadas × carga do regime por médico, indicando quem excedeu | Valida RN03 |
-| Q6 | Quantidade de médicos por departamento em cada dia da semana | `GROUP BY` |
+| `01_select_q1.sql` | Escala semanal completa de um médico: dia, turno, prédio e departamento | Pergunta central |
+| `02_select_q2.sql` | Médicos presentes em um prédio na quarta-feira à tarde | Pergunta central |
+| `03_select_q3.sql` | Médicos sem nenhuma alocação na semana | `LEFT JOIN` |
+| `04_select_q4.sql` | Alocações em departamento incompatível com a especialidade (**deve retornar vazio**) | Validação da RN02 via Anti-Join (0 linhas / resultado vazio) |
+| `05_select_q5.sql` | Horas alocadas × carga do regime por médico, indicando quem excedeu | Valida RN03 |
+| `06_select_q6.sql` | Quantidade de médicos por departamento em cada dia da semana | `GROUP BY` |
 
 ## 7. Decisões de modelagem
 
@@ -187,6 +200,7 @@ Cada consulta está em um arquivo próprio em `database/queries`, com o resultad
 - **Turno da noite.** O turno das 19h às 07h cruza a meia-noite. Ele é registrado com `hora_inicio = '19:00'`, `hora_fim = '07:00'` e `horas_duracao = 12`, e a alocação refere-se ao dia em que o turno **começa**.
 - **Tabelas existentes preservadas.** `medico`, `especialidade` e `regime_trabalho` não foram modificadas, e as novas tabelas se relacionam com elas por FK.
 - **Regras verificadas por consulta.** RN02 e RN03 envolvem comparações entre tabelas que não cabem em uma constraint simples do SQLite. Por isso são validadas pelas consultas Q4 e Q5 e serão reforçadas na camada de serviço na Parte 2.
+- **Auditoria por Anti-Join (Q4).** A consulta Q4 faz o cruzamento entre alocações e permissões. Retornar 0 linhas comprova que a escala está 100% em conformidade com as restrições médicas.
 
 ## 8. Equipe e próximos passos
 
