@@ -4,17 +4,19 @@
 -- Foco: Agrupamento por médico, soma das durações dos turnos e comparação CASE.
 --
 -- RESULTADO ESPERADO:
--- id_medico | medico          | regime          | carga_permitida | horas_alocadas | excedeu_limite
--- ----------+-----------------+-----------------+-----------------+----------------+---------------
--- 5         | Eduarda Pacheco | Parcial 30h     | 30              | 60             | SIM
--- 3         | Camila Nogueira | Parcial 30h     | 30              | 24             | NÃO
--- 1         | Ana Ribeiro     | Parcial 30h     | 30              | 18             | NÃO
--- 4         | Daniel Moreira  | Integral 40h    | 40              | 18             | NÃO
--- 2         | Bruno Carvalho  | Parcial 20h     | 20              | 12             | NÃO
--- 7         | Gabriela Lacerda| Integral 40h    | 40              | 12             | NÃO
--- 6         | Felipe Teixeira | Plantonista 24h | 24              | 6              | NÃO
--- 8         | Henrique Batista| Plantonista 24h | 24              | 6              | NÃO
--- (Total: 8 linhas - Apenas o Médico ID 5 ultrapassa a carga com 'SIM')
+-- id_medico | medico           | regime          | carga_permitida | horas_alocadas | excedeu_limite
+-- ----------+------------------+-----------------+-----------------+----------------+---------------
+-- 3         | Camila Nogueira  | Parcial 30h     | 30              | 24             | NÃO
+-- 5         | Eduarda Pacheco  | Parcial 30h     | 30              | 24             | NÃO
+-- 1         | Ana Ribeiro      | Parcial 30h     | 30              | 18             | NÃO
+-- 4         | Daniel Moreira   | Integral 40h    | 40              | 18             | NÃO
+-- 2         | Bruno Carvalho   | Parcial 20h     | 20              | 12             | NÃO
+-- 7         | Gabriela Lacerda | Integral 40h    | 40              | 12             | NÃO
+-- 9         | Isabela Fontes   | Plantonista 24h | 24              | 12             | NÃO
+-- 10        | João Pereira     | Integral 40h    | 40              | 12             | NÃO
+-- 6         | Felipe Teixeira  | Plantonista 24h | 24              | 6              | NÃO
+-- 8         | Henrique Batista | Plantonista 24h | 24              | 6              | NÃO
+-- (Total: 10 linhas - Nenhum médico ultrapassa a carga: todos com 'NÃO')
 -- =============================================================================
 
 SELECT 
@@ -32,4 +34,4 @@ JOIN regime_trabalho r ON m.id_regime = r.id_regime
 JOIN alocacao a ON m.id_medico = a.id_medico
 JOIN turno t ON a.id_turno = t.id_turno
 GROUP BY m.id_medico, m.nome, r.descricao, r.carga_horaria_semanal
-ORDER BY excedeu_limite DESC, horas_alocadas DESC;
+ORDER BY excedeu_limite DESC, horas_alocadas DESC, m.id_medico;

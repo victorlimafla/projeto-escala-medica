@@ -3,14 +3,15 @@
 -- Objetivo: Listar profissionais cadastrados que não foram escalados.
 -- Foco: Utilização de LEFT JOIN com filtro a.id_alocacao IS NULL.
 --
--- RESULTADO ESPERADO:
--- id_medico | medico          | especialidade
--- ----------+-----------------+-------------------
--- 9         | Isabela Fontes  | Anestesiologia
--- 10        | João Pereira    | Medicina Intensiva
--- ...       | ...             | ...
--- 36        | (Demais)        | ...
--- (Total: 28 linhas - Médicos do ID 9 ao 36)
+-- RESULTADO ESPERADO (primeiras linhas):
+-- id_medico | medico           | especialidade
+-- ----------+------------------+--------------
+-- 11        | Karina Siqueira  | Dermatologia
+-- 12        | Leonardo Amaral  | Ortopedia
+-- 13        | Mariana Coutinho | Ortopedia
+-- 14        | Nicolas Barreto  | Radiologia
+-- ... | ... | ...
+-- (Total: 26 linhas - Médicos do ID 11 ao 36)
 -- =============================================================================
 
 SELECT 
