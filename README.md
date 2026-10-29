@@ -108,6 +108,16 @@ Foram modeladas cinco novas tabelas, ligadas às anteriores:
 
 Em outras palavras, `alocacao` é a entidade que resolve a relação entre **médico**, **departamento** e **turno** em um determinado **dia da semana**: um médico pode ser alocado em vários departamentos e turnos ao longo da semana, e um departamento recebe vários médicos.
 
+### 3.4 Dados inseridos (DML)
+
+| Tabela | Registros inseridos |
+|---|---|
+| `predio` | 3 (Bloco A - Principal, Bloco B - Ambulatorial, Bloco C - Emergência) |
+| `departamento` | 8 |
+| `turno` | 3 (Manhã, Tarde, Noite) |
+| `departamento_especialidade` | 17 compatibilidades |
+| `alocacao` | 21 alocações, que formam a escala semanal de 10 médicos (os outros 26 ficam sem alocação) |
+
 ## 4. Regras de negócio
 
 | Código | Regra | Como é garantida |
@@ -161,11 +171,28 @@ O SQLite mantém as chaves estrangeiras **desligadas por padrão**. É necessár
    done
    ```
 
-4. Execute qualquer consulta de validação:
+4. Confira a integridade das chaves estrangeiras (não deve imprimir nada):
+
+   ```bash
+   sqlite3 escala_medica.sqlite "PRAGMA foreign_key_check;"
+   ```
+
+5. Execute qualquer consulta, por exemplo a Q1:
 
    ```bash
    (echo "PRAGMA foreign_keys = ON;"; cat database/queries/01_select_q1.sql) | sqlite3 -header -column escala_medica.sqlite
    ```
+
+   Para rodar as seis de uma vez:
+
+   ```bash
+   for f in database/queries/0*.sql; do
+     echo "== $f"
+     sqlite3 -header -column escala_medica.sqlite < "$f"
+   done
+   ```
+
+> Se precisar repetir o passo a passo, apague antes a cópia (`rm escala_medica.sqlite`): o DDL não roda duas vezes no mesmo banco.
 
 ### Passo a passo (DB Browser ou DBeaver)
 
@@ -175,20 +202,20 @@ O SQLite mantém as chaves estrangeiras **desligadas por padrão**. É necessár
 4. Faça o mesmo com os scripts de `database/dml`.
 5. Execute as consultas de `database/queries`.
 
-> **Ordem importa:** `predio` → `departamento` → `departamento_especialidade` → `turno` → `alocacao`. As tabelas sem FK são criadas primeiro, e as que dependem delas vêm depois.
+> **Ordem importa.** No DDL: `predio` → `departamento` → `departamento_especialidade` → `turno` → `alocacao`. No DML: `predio` → `departamento` → `turno` → `departamento_especialidade` → `alocacao`. As tabelas sem FK vêm primeiro, e as que dependem delas depois.
 
 ## 6. Consultas obrigatórias
 
 Cada consulta está em um arquivo próprio em `database/queries`, com o resultado esperado documentado no comentário do arquivo.
 
-| Arquivo | Descrição | Foco e Resultado |
-|---|---|---|
-| `01_select_q1.sql` | Escala semanal completa de um médico: dia, turno, prédio e departamento | Pergunta central |
-| `02_select_q2.sql` | Médicos presentes em um prédio na quarta-feira à tarde | Pergunta central |
-| `03_select_q3.sql` | Médicos sem nenhuma alocação na semana | `LEFT JOIN` |
-| `04_select_q4.sql` | Alocações em departamento incompatível com a especialidade (**deve retornar vazio**) | Validação da RN02 via Anti-Join (0 linhas / resultado vazio) |
-| `05_select_q5.sql` | Horas alocadas × carga do regime por médico, indicando quem excedeu | Valida RN03 |
-| `06_select_q6.sql` | Quantidade de médicos por departamento em cada dia da semana | `GROUP BY` |
+| Arquivo | Descrição | Foco | Resultado esperado |
+|---|---|---|---|
+| `01_select_q1.sql` | Escala semanal completa de um médico (Ana Ribeiro, `id_medico = 1`): dia, turno, prédio e departamento | Pergunta central | 3 linhas |
+| `02_select_q2.sql` | Médicos presentes no Bloco A na quarta-feira à tarde | Pergunta central | 2 linhas (Ana Ribeiro e Gabriela Lacerda) |
+| `03_select_q3.sql` | Médicos sem nenhuma alocação na semana | `LEFT JOIN` | 26 linhas (médicos 11 a 36) |
+| `04_select_q4.sql` | Alocações em departamento incompatível com a especialidade | Valida RN02 (anti-join) | Vazio (0 linhas) |
+| `05_select_q5.sql` | Horas alocadas × carga do regime por médico, indicando quem excedeu | Valida RN03 | 10 linhas, todas com `NÃO` |
+| `06_select_q6.sql` | Quantidade de médicos por departamento em cada dia da semana | `GROUP BY` | 17 linhas |
 
 ## 7. Decisões de modelagem
 
@@ -200,7 +227,8 @@ Cada consulta está em um arquivo próprio em `database/queries`, com o resultad
 - **Turno da noite.** O turno das 19h às 07h cruza a meia-noite. Ele é registrado com `hora_inicio = '19:00'`, `hora_fim = '07:00'` e `horas_duracao = 12`, e a alocação refere-se ao dia em que o turno **começa**.
 - **Tabelas existentes preservadas.** `medico`, `especialidade` e `regime_trabalho` não foram modificadas, e as novas tabelas se relacionam com elas por FK.
 - **Regras verificadas por consulta.** RN02 e RN03 envolvem comparações entre tabelas que não cabem em uma constraint simples do SQLite. Por isso são validadas pelas consultas Q4 e Q5 e serão reforçadas na camada de serviço na Parte 2.
-- **Auditoria por Anti-Join (Q4).** A consulta Q4 faz o cruzamento entre alocações e permissões. Retornar 0 linhas comprova que a escala está 100% em conformidade com as restrições médicas.
+- **Auditoria por anti-join (Q4).** A consulta Q4 cruza as alocações com `departamento_especialidade` e lista as que não têm compatibilidade correspondente. Com os dados inseridos, ela retorna 0 linhas, o que confirma a RN02 para toda a escala.
+- **Q5 com ordem determinística.** O `ORDER BY` inclui `id_medico` como critério final de desempate, para que o resultado seja sempre o mesmo.
 
 ## 8. Equipe e próximos passos
 
