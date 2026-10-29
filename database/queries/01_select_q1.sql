@@ -1,3 +1,17 @@
+-- =============================================================================
+-- Consulta: Q1 - Escala semanal completa de um médico
+-- Objetivo: Responder à Pergunta Central do projeto para o médico selecionado.
+-- Foco: Filtro por id_medico e ordenação cronológica por dia e turno.
+--
+-- RESULTADO ESPERADO (para id_medico = 1 - Ana Ribeiro):
+-- medico       | especialidade | dia_semana | turno | predio              | departamento
+-- -------------+---------------+------------+-------+---------------------+-----------------------
+-- Ana Ribeiro  | Ortopedia     | 1          | Manhã | Bloco A - Principal | UTI Adulto
+-- Ana Ribeiro  | Ortopedia     | 3          | Tarde | Bloco A - Principal | UTI Adulto
+-- Ana Ribeiro  | Ortopedia     | 5          | Manhã | Bloco C - Emergência| Emergência Cardiológica
+-- (Total: 3 linhas)
+-- =============================================================================
+
 SELECT 
     m.nome AS medico,
     e.nome AS especialidade,

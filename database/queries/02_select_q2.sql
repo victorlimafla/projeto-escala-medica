@@ -1,3 +1,16 @@
+-- =============================================================================
+-- Consulta: Q2 - Médicos presentes em um prédio em um dia/turno específico
+-- Objetivo: Identificar quem está presente no Bloco A na quarta-feira à tarde.
+-- Foco: Cruzamento de prédio (id_predio = 1), dia (dia_semana = 3) e turno (id_turno = 2).
+--
+-- RESULTADO ESPERADO:
+-- medico           | especialidade | predio              | departamento
+-- -----------------+---------------+---------------------+-------------------
+-- Ana Ribeiro      | Ortopedia     | Bloco A - Principal | UTI Adulto
+-- Gabriela Lacerda | Dermatologia  | Bloco A - Principal | Centro Cirúrgico
+-- (Total: 2 linhas)
+-- =============================================================================
+
 SELECT 
     m.nome AS medico,
     e.nome AS especialidade,
